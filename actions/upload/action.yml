@@ -14,6 +14,10 @@ inputs:
   api-token:
     description: jordan API token for authentication
     required: true
+  backend-url:
+    description: jordan backend URL
+    required: false
+    default: "https://api.daily.loci-dev.net/"
 runs:
   using: node20
   main: dist/index.js
