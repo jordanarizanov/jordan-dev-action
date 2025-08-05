@@ -1,0 +1,13 @@
+name: jordan Insights
+description: Fetch jordan function insights
+author: AuroraLabs
+inputs:
+  project:
+    description: Name of the project to retrieve insights for
+    required: true
+  version:
+    description: Version of the project to retrieve insights for
+    required: true
+runs:
+  using: node20
+  main: dist/index.js
