@@ -1,0 +1,45 @@
+name: Example jordan Action Usage
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  upload-binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Build project (example)
+        run: |
+          echo "Building project..."
+          # Add your build commands here
+          echo "Build complete"
+          
+      - name: Upload to jordan
+        uses: jordanarizanov/jordan-dev-action@main
+        with:
+          mode: upload
+          project: ${{ github.repository }}
+          version: ${{ github.sha }}
+          binaries: |
+            build/app
+            build/lib
+          api-token: ${{ secrets.JORDAN_API_TOKEN }}
+          
+  get-insights:
+    runs-on: ubuntu-latest
+    needs: upload-binaries
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Get jordan Insights
+        uses: jordanarizanov/jordan-dev-action@main
+        with:
+          mode: insights
+          project: ${{ github.repository }}
+          version: ${{ github.sha }}
+          api-token: ${{ secrets.JORDAN_API_TOKEN }} 
