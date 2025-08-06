@@ -1,5 +1,9 @@
 name: jordan
 description: Line of Code Insights Tool
+author: AuroraLabs
+branding:
+  icon: code
+  color: blue
 inputs:
   mode:
     description: Mode to run
