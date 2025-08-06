@@ -1,5 +1,5 @@
-name: jordan
-description: Line of Code Insights Tool
+name: jordan-loci-insights
+description: Binary analysis and function insights tool for code quality assessment
 author: Jordan API
 branding:
   icon: code
