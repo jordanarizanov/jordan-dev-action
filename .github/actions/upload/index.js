@@ -24,8 +24,8 @@ async function run() {
     core.info("Binaries archived");
     core.endGroup();
 
-    core.startGroup("Upload new project version to jordan");
-    await exec.exec("jordan_api", ["upload", binsArchive, iProject, iVersion]);
+    core.startGroup("Upload new project version to loci");
+    await exec.exec("loci_api", ["upload", binsArchive, iProject, iVersion]);
     core.info("Project version uploaded");
     core.endGroup();
   } catch (err) {
