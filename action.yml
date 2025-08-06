@@ -19,7 +19,7 @@ inputs:
     description: Name of the existing project for which to retrieve function insights
     required: false
   version:
-    description: Version of the project for which to retrieve function insights
+    description: Version of the project (auto-generated from git if not provided)
     required: false
 runs:
   using: node20

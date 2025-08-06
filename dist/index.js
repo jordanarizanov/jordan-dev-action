@@ -27602,7 +27602,7 @@ async function uploadMode() {
     }
 
     const iProject  = core.getInput("project", { required: true });
-    const iVersion  = core.getInput("version", { required: true });
+    const iVersion  = core.getInput("version", { required: false }) || process.env.JORDAN_VERSION;
     const iBinaries = core.getInput("binaries", { required: true });
 
     const binaries = iBinaries
@@ -27641,7 +27641,7 @@ async function insightsMode() {
     }
 
     const project = core.getInput("project", { required: true });
-    const version = core.getInput("version", { required: true });
+    const version = core.getInput("version", { required: false }) || process.env.JORDAN_VERSION;
 
     core.startGroup(`Fetch function insights for ${project} (${version})`);
     await exec.exec("loci_api", ["func-insights", project, version]);
@@ -27652,9 +27652,68 @@ async function insightsMode() {
   }
 }
 
+async function getVersionInfo() {
+  try {
+    // Get git commit hash
+    let gitHash = '';
+    await exec.exec('git', ['rev-parse', '--short', 'HEAD'], {
+      listeners: {
+        stdout: (data) => {
+          gitHash = data.toString().trim();
+        }
+      }
+    });
+
+    // Get git tag if available
+    let gitTag = '';
+    try {
+      await exec.exec('git', ['describe', '--tags', '--exact-match', 'HEAD'], {
+        listeners: {
+          stdout: (data) => {
+            gitTag = data.toString().trim();
+          }
+        }
+      });
+    } catch {
+      // No exact tag match, that's okay
+    }
+
+    // Get branch name
+    let gitBranch = '';
+    await exec.exec('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      listeners: {
+        stdout: (data) => {
+          gitBranch = data.toString().trim();
+        }
+      }
+    });
+
+    // Create version string
+    let version = gitTag || `${gitBranch}-${gitHash}`;
+    
+    core.info(`Generated version: ${version} (from jordan action git info)`);
+    return version;
+  } catch (err) {
+    // Fallback to timestamp if git fails
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    core.info(`Git version failed, using timestamp: jordan-${timestamp}`);
+    return `jordan-${timestamp}`;
+  }
+}
+
 async function run() {
   try {
     const mode = core.getInput("mode", { required: true });
+    let inputVersion = core.getInput("version", { required: false });
+    
+    // If no version provided, generate from git
+    if (!inputVersion) {
+      inputVersion = await getVersionInfo();
+      core.info(`Auto-generated version: ${inputVersion}`);
+    }
+    
+    // Set the version for use in upload/insights modes
+    core.exportVariable('JORDAN_VERSION', inputVersion);
     
     // Setup Python environment first
     await setupPython();
