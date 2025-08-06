@@ -25,31 +25,5 @@ inputs:
     required: false
     default: "https://api.daily.loci-dev.net/"
 runs:
-  using: composite
-  steps:
-    - name: Setup Python with caching
-      uses: actions/setup-python@v5.6.0
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-    - name: Install dependencies
-      uses: ./actions/common
-      with:
-        requirements-file: ${{ inputs.requirements-file }}
-    - name: Activate upload mode
-      if: ${{ inputs.mode == 'upload' }}
-      uses: ./actions/upload
-      with:
-        project:   ${{ inputs.project }}
-        version:   ${{ inputs.version }}
-        binaries:  ${{ inputs.binaries }}
-        api-token: ${{ inputs.api-token }}
-        backend-url: ${{ inputs.backend-url }}
-    - name: Activate insights mode
-      if: ${{ inputs.mode == 'insights' }}
-      uses: ./actions/insights
-      with:
-        project: ${{ inputs.project }}
-        version: ${{ inputs.version }}
-        api-token: ${{ inputs.api-token }}
-        backend-url: ${{ inputs.backend-url }}
+  using: node20
+  main: dist/index.js
