@@ -22,27 +22,5 @@ inputs:
     description: Version of the project for which to retrieve function insights
     required: false
 runs:
-  using: composite
-  steps:
-    - name: Setup Python with caching
-      uses: actions/setup-python@v5.6.0
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-    - name: Install dependencies
-      uses: ./.github/actions/common
-      with:
-        requirements-file: ${{ inputs.requirements-file }}
-    - name: Activate upload mode
-      if: ${{ inputs.mode == 'upload' }}
-      uses: ./.github/actions/upload
-      with:
-        project:   ${{ inputs.project }}
-        version:   ${{ inputs.version }}
-        binaries:  ${{ inputs.binaries }}
-    - name: Activate insights mode
-      if: ${{ inputs.mode == 'insights' }}
-      uses: ./.github/actions/insights
-      with:
-        project: ${{ inputs.project }}
-        version: ${{ inputs.version }}
+  using: node20
+  main: dist/index.js
