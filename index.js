@@ -4,8 +4,8 @@ const path = require("path");
 
 async function setupPython() {
   try {
-    const requirementsFile = core.getInput("requirements-file", { required: false }) || "requirements.txt";
-
+    const fs = require('fs');
+    
     core.startGroup("Setup python environment");
     await exec.exec("python", ["--version"]);
     core.endGroup();
@@ -15,8 +15,17 @@ async function setupPython() {
     core.endGroup();
 
     core.startGroup("Install python dependencies");
-    await exec.exec("pip", ["install", "--cache-dir", `${process.env.HOME}/.cache/pip`, "-r", requirementsFile]);
+    // Create requirements.txt with loci_api
+    const requirementsContent = "loci_api\n";
+    fs.writeFileSync("requirements.txt", requirementsContent);
+    core.info("Created requirements.txt with loci_api");
+    
+    await exec.exec("pip", ["install", "--cache-dir", `${process.env.HOME}/.cache/pip`, "-r", "requirements.txt"]);
     core.info("Python dependencies installed");
+    
+    // Verify loci_api is available
+    await exec.exec("which", ["loci_api"]);
+    core.info("loci_api found in PATH");
     core.endGroup();
 
     core.info("Python environment ready");
