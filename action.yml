@@ -4,7 +4,10 @@ inputs:
   mode:
     description: Mode to run
     required: true
-
+  requirements-file:
+    description: Path to requirements.txt
+    required: false
+    default: requirements.txt
   binaries:
     description: Paths to binaries to upload
     required: false
@@ -14,13 +17,28 @@ inputs:
   version:
     description: Version of the project for which to retrieve function insights
     required: false
-  api-token:
-    description: jordan API token for authentication
-    required: true
-  backend-url:
-    description: jordan backend URL
-    required: false
-    default: "https://api.daily.loci-dev.net/"
 runs:
-  using: node20
-  main: dist/index.js
+  using: composite
+  steps:
+    - name: Setup Python with caching
+      uses: actions/setup-python@v5.6.0
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    - name: Install dependencies
+      uses: ./.github/actions/common
+      with:
+        requirements-file: ${{ inputs.requirements-file }}
+    - name: Activate upload mode
+      if: ${{ inputs.mode == 'upload' }}
+      uses: ./.github/actions/upload
+      with:
+        project:   ${{ inputs.project }}
+        version:   ${{ inputs.version }}
+        binaries:  ${{ inputs.binaries }}
+    - name: Activate insights mode
+      if: ${{ inputs.mode == 'insights' }}
+      uses: ./.github/actions/insights
+      with:
+        project: ${{ inputs.project }}
+        version: ${{ inputs.version }}

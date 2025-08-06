@@ -1,0 +1,16 @@
+name: jordan Upload
+description: Action that uploads new project version to jordan
+author: AuroraLabs
+inputs:
+  binaries:
+    description: Paths to binaries (newline-separated)
+    required: true
+  project:
+    description: Name of the project to upload binaries for
+    required: true
+  version:
+    description: Version identifier for this upload
+    required: true
+runs:
+  using: node20
+  main: dist/index.js 
