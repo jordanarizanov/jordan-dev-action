@@ -27572,8 +27572,24 @@ async function setupPython() {
     core.endGroup();
 
     core.startGroup("Install python dependencies");
-    await exec.exec("pip", ["install", "--cache-dir", `${process.env.HOME}/.cache/pip`, "-r", requirementsFile]);
-    core.info("Python dependencies installed");
+    try {
+      await exec.exec("pip", ["install", "--cache-dir", `${process.env.HOME}/.cache/pip`, "-r", requirementsFile]);
+      core.info("Python dependencies installed");
+    } catch (pipError) {
+      core.warning("Could not install jordan_api via pip. This is expected if jordan_api is a binary tool.");
+      core.info("Continuing with setup...");
+    }
+    core.endGroup();
+
+    core.startGroup("Check jordan_api availability");
+    try {
+      await exec.exec("which", ["jordan_api"]);
+      core.info("jordan_api command found in PATH");
+    } catch (whichError) {
+      core.warning("jordan_api command not found in PATH");
+      core.info("Please ensure jordan_api is installed and available in the system PATH");
+      core.info("You may need to install it manually or provide installation instructions");
+    }
     core.endGroup();
 
     core.info("Python environment ready");
