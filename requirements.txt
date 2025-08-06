@@ -1,2 +1,1 @@
-# jordan_api is a binary tool, not a pip package
-# Please install jordan_api manually or ensure it's available in PATH
+jordan_api
