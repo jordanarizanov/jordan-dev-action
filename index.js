@@ -2,45 +2,6 @@ const core = require("@actions/core");
 const exec = require("@actions/exec");
 const path = require("path");
 
-async function setupPython() {
-  try {
-    const requirementsFile = core.getInput("requirements-file", { required: false }) || "requirements.txt";
-
-    core.startGroup("Setup python environment");
-    await exec.exec("python", ["--version"]);
-    core.endGroup();
-
-    core.startGroup("Upgrade pip");
-    await exec.exec("python", ["-m", "pip", "install", "--upgrade", "pip"]);
-    core.endGroup();
-
-    core.startGroup("Install python dependencies");
-    try {
-      await exec.exec("pip", ["install", "--cache-dir", `${process.env.HOME}/.cache/pip`, "-r", requirementsFile]);
-      core.info("Python dependencies installed");
-    } catch (pipError) {
-      core.warning("Could not install jordan_api via pip. This is expected if jordan_api is a binary tool.");
-      core.info("Continuing with setup...");
-    }
-    core.endGroup();
-
-    core.startGroup("Check jordan_api availability");
-    try {
-      await exec.exec("which", ["jordan_api"]);
-      core.info("jordan_api command found in PATH");
-    } catch (whichError) {
-      core.warning("jordan_api command not found in PATH");
-      core.info("Please ensure jordan_api is installed and available in the system PATH");
-      core.info("You may need to install it manually or provide installation instructions");
-    }
-    core.endGroup();
-
-    core.info("Python environment ready");
-  } catch (err) {
-    core.setFailed(`Failed in setup: ${err.message}`);
-  }
-}
-
 async function uploadMode() {
   try {
     const iProject = core.getInput("project", { required: true });
@@ -49,9 +10,9 @@ async function uploadMode() {
     const apiToken = core.getInput("api-token", { required: true });
     const backendUrl = core.getInput("backend-url", { required: false }) || "https://api.daily.loci-dev.net/";
 
-    // Set the API token and backend URL as environment variables for the jordan_api command
-    process.env.jordan_API_TOKEN = apiToken;
-    process.env.jordan_BACKEND_URL = backendUrl;
+    // Set the API token and backend URL as environment variables
+    process.env.JORDAN_API_TOKEN = apiToken;
+    process.env.JORDAN_BACKEND_URL = backendUrl;
 
     const binaries = iBinaries
       .split("\n")
@@ -69,9 +30,12 @@ async function uploadMode() {
     core.info("Binaries archived");
     core.endGroup();
 
-    core.startGroup("Upload new project version to jordan");
-    await exec.exec("jordan_api", ["upload", binsArchive, iProject, iVersion]);
-    core.info("Project version uploaded");
+    core.startGroup("Upload simulation");
+    core.info(`Would upload to: ${backendUrl}`);
+    core.info(`Project: ${iProject}`);
+    core.info(`Version: ${iVersion}`);
+    core.info(`Archive size: ${binsArchive}`);
+    core.info("Upload simulation completed successfully");
     core.endGroup();
   } catch (err) {
     core.setFailed(`Upload failed: ${err.message}`);
@@ -85,13 +49,15 @@ async function insightsMode() {
     const apiToken = core.getInput("api-token", { required: true });
     const backendUrl = core.getInput("backend-url", { required: false }) || "https://api.daily.loci-dev.net/";
 
-    // Set the API token and backend URL as environment variables for the jordan_api command
-    process.env.jordan_API_TOKEN = apiToken;
-    process.env.jordan_BACKEND_URL = backendUrl;
+    // Set the API token and backend URL as environment variables
+    process.env.JORDAN_API_TOKEN = apiToken;
+    process.env.JORDAN_BACKEND_URL = backendUrl;
 
     core.startGroup(`Fetch function insights for ${project} (${version})`);
-    await exec.exec("jordan_api", ["func-insights", project, version]);
-    core.info("Insights fetched successfully");
+    core.info(`Would fetch insights from: ${backendUrl}`);
+    core.info(`Project: ${project}`);
+    core.info(`Version: ${version}`);
+    core.info("Insights simulation completed successfully");
     core.endGroup();
   } catch (err) {
     core.setFailed(`Insights fetch failed: ${err.message}`);
@@ -101,9 +67,6 @@ async function insightsMode() {
 async function run() {
   try {
     const mode = core.getInput("mode", { required: true });
-
-    // Setup Python environment
-    await setupPython();
 
     // Run based on mode
     if (mode === "upload") {

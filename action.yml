@@ -4,10 +4,7 @@ inputs:
   mode:
     description: Mode to run
     required: true
-  requirements-file:
-    description: Path to requirements.txt
-    required: false
-    default: requirements.txt
+
   binaries:
     description: Paths to binaries to upload
     required: false
