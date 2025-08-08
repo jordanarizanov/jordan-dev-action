@@ -1,11 +1,6 @@
-name: jordan Common
+name: LOCI Common
 description: Setup Python and install dependencies
 author: AuroraLabs
-inputs:
-  requirements-file:
-    description: Path to requirements.txt
-    required: false
-    default: requirements.txt
 runs:
   using: node20
-  main: dist/index.js 
+  main: dist/index.js

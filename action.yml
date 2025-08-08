@@ -1,26 +1,44 @@
 name: jordan-loci-insights
 description: Binary analysis and function insights tool for code quality assessment
 author: Jordan API
-branding:
-  icon: code
-  color: blue
 inputs:
   mode:
     description: Mode to run
     required: true
-  requirements-file:
-    description: Path to requirements.txt
-    required: false
-    default: requirements.txt
   binaries:
     description: Paths to binaries to upload
     required: false
   project:
-    description: Name of the existing project for which to retrieve function insights
+    description: Name of an existing project
     required: false
   version:
-    description: Version of the project (auto-generated from git if not provided)
+    description: Version of an existing project
     required: false
+outputs:
+  version: 
+    description: Version of an existing project
+    value: ${{ steps.upload.outputs.version }}
 runs:
-  using: node20
-  main: dist/index.js
+  using: composite
+  steps:
+    - name: Setup Python with caching
+      uses: actions/setup-python@v5.6.0
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    - name: Install dependencies
+      uses: auroralabs-loci/loci-dev-action/.github/actions/common@main
+    - name: Activate upload mode
+      id: upload
+      if: ${{ inputs.mode == 'upload' }}
+      uses: auroralabs-loci/loci-dev-action/.github/actions/upload@main
+      with:
+        project:   ${{ inputs.project }}
+        version:   ${{ inputs.version }}
+        binaries:  ${{ inputs.binaries }}
+    - name: Activate insights mode
+      if: ${{ inputs.mode == 'insights' }}
+      uses: auroralabs-loci/loci-dev-action/.github/actions/insights@main
+      with:
+        project: ${{ inputs.project }}
+        version: ${{ inputs.version }}

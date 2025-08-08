@@ -2,37 +2,47 @@ const core = require("@actions/core");
 const exec = require("@actions/exec");
 const path = require("path");
 
+async function getVersion() {
+  try {
+    const ref = process.env.GITHUB_REF || '';
+    const commit = process.env.GITHUB_SHA?.substring(0, 7) || '';
+
+    let branch, tag = '';    
+    if (ref.startsWith('refs/heads/')) {
+      branch = ref.replace('refs/heads/', '');
+    } else if (ref.startsWith('refs/tags/')) {
+      tag = ref.replace('refs/tags/', '');
+    }
+    return tag || `${branch}@${commit}`;
+  } catch (error) {
+    return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  }
+}
+
 async function run() {
   try {
-    // Map JORDAN environment variables to LOCI variables that loci_api expects
-    if (process.env.JORDAN_API_TOKEN) {
-      process.env.LOCI_API_KEY = process.env.JORDAN_API_TOKEN;
-    }
-    if (process.env.JORDAN_BACKEND_URL) {
-      process.env.LOCI_BACKEND_URL = process.env.JORDAN_BACKEND_URL;
-    }
-
-    const iProject  = core.getInput("project", { required: true });
-    const iVersion  = core.getInput("version", { required: true });
     const iBinaries = core.getInput("binaries", { required: true });
+    const iProject  = core.getInput("project",  { required: true });
+    const iVersion  = core.getInput("version",  { required: false }) || await getVersion();
 
     const binaries = iBinaries
       .split("\n")
       .map((x) => x.trim())
       .filter(Boolean);
 
+    core.setOutput('version', iVersion);
     core.startGroup("Collect binaries");
     binaries.forEach((file) => core.info(`- ${file}`));
     core.endGroup();
 
     core.startGroup("Archive binaries");
-    const binsArchive = path.join(process.cwd(), "binaries.tar.xz");
-    await exec.exec("tar", ["-cf", binsArchive, ...binaries]);
+    const binsArchive = path.join(process.cwd(), "binaries.tar.gz");
+    await exec.exec("tar", ["-zcf", binsArchive, ...binaries]);
     await exec.exec("ls", ["-lh", binsArchive]);
     core.info("Binaries archived");
     core.endGroup();
 
-    core.startGroup("Upload new project version to loci");
+    core.startGroup(`Upload project "${iProject}" version "${iVersion}" to Loci`);
     await exec.exec("loci_api", ["upload", binsArchive, iProject, iVersion]);
     core.info("Project version uploaded");
     core.endGroup();
@@ -41,4 +51,4 @@ async function run() {
   }
 }
 
-run(); 
+run();

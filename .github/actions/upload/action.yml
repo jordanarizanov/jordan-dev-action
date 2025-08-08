@@ -1,5 +1,5 @@
-name: jordan Upload
-description: Action that uploads new project version to jordan
+name: LOCI Upload
+description: Action that uploads new project version to LOCI
 author: AuroraLabs
 inputs:
   binaries:
@@ -9,8 +9,8 @@ inputs:
     description: Name of the project to upload binaries for
     required: true
   version:
-    description: Version identifier for this upload
-    required: true
+    description: Version identifier for this upload (if not provided - will be generated)
+    required: false
 runs:
   using: node20
-  main: dist/index.js 
+  main: dist/index.js

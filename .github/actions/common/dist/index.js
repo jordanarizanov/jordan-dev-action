@@ -27555,12 +27555,14 @@ module.exports = parseParams
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
+const path = __nccwpck_require__(6928);
 const core = __nccwpck_require__(217);
 const exec = __nccwpck_require__(5057);
 
 async function run() {
   try {
-    const requirementsFile = core.getInput("requirements-file", { required: false }) || "requirements.txt";
+    const actionPath = process.env.GITHUB_ACTION_PATH || ".";
+    const requirementsPath = path.join(actionPath, "requirements.txt");
 
     core.startGroup("Setup python environment");
     await exec.exec("python", ["--version"]);
@@ -27571,7 +27573,7 @@ async function run() {
     core.endGroup();
 
     core.startGroup("Install python dependencies");
-    await exec.exec("pip", ["install", "--cache-dir", `${process.env.HOME}/.cache/pip`, "-r", requirementsFile]);
+    await exec.exec("pip", ["install", "-r", requirementsPath]);
     core.info("Python dependencies installed");
     core.endGroup();
 

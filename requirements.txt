@@ -1,1 +1,1 @@
-loci_api
+loci-api==0.2.2

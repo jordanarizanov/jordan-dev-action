@@ -1,9 +1,11 @@
+const path = require("path");
 const core = require("@actions/core");
 const exec = require("@actions/exec");
 
 async function run() {
   try {
-    const requirementsFile = core.getInput("requirements-file", { required: false }) || "requirements.txt";
+    const actionPath = process.env.GITHUB_ACTION_PATH || ".";
+    const requirementsPath = path.join(actionPath, "requirements.txt");
 
     core.startGroup("Setup python environment");
     await exec.exec("python", ["--version"]);
@@ -14,7 +16,7 @@ async function run() {
     core.endGroup();
 
     core.startGroup("Install python dependencies");
-    await exec.exec("pip", ["install", "--cache-dir", `${process.env.HOME}/.cache/pip`, "-r", requirementsFile]);
+    await exec.exec("pip", ["install", "-r", requirementsPath]);
     core.info("Python dependencies installed");
     core.endGroup();
 
@@ -24,4 +26,4 @@ async function run() {
   }
 }
 
-run(); 
+run();
